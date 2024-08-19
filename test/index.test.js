@@ -234,6 +234,25 @@ describe('Bytenode', () => {
       }, 'Rejected While Running .jsc in Electron');
     });
 
+    it('preserves function declaration .toString()', () => {
+      const buffer = bytenode.compileCode(`
+        // bytenode-preserve-start
+        function foo() { return 1+1; }
+        // bytenode-preserve-end
+        foo.toString();
+      `);
+      const result = bytenode.runBytecode(buffer);
+      assert.strictEqual(result, 'function foo() { return 1+1; }');
+    });
+
+    it('preserves function expression .toString()', () => {
+      const buffer = bytenode.compileCode(`
+        (/*bytenode-preserve-start*/() => 1+1/*bytenode-preserve-end*/).toString();
+      `);
+      const result = bytenode.runBytecode(buffer);
+      assert.strictEqual(result, '() => 1+1');
+    });
+
     after(() => {
       if (fs.existsSync(tempPath)) {
         rimraf(tempPath);
